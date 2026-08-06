@@ -13,6 +13,7 @@
 
     <modules>
         <module>library-managment</module>
+        <module>training-system</module>
     </modules>
 
     <properties>
