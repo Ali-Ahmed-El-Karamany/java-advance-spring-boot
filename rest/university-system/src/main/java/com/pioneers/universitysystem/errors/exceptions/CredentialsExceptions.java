@@ -1,0 +1,7 @@
+package com.pioneers.universitysystem.errors.exceptions;
+
+public class CredentialsExceptions extends RuntimeException {
+    public CredentialsExceptions(String message) {
+        super(message);
+    }
+}
