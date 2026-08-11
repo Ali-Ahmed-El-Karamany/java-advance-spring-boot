@@ -4,6 +4,7 @@ import com.pioneers.universitysystem.errors.exceptions.CredentialsExceptions;
 import com.pioneers.universitysystem.models.dtos.requests.StudentLoginRequest;
 import com.pioneers.universitysystem.models.dtos.requests.StudentRegisterRequest;
 import com.pioneers.universitysystem.models.entities.Student;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,5 +94,22 @@ public class StudentController {
         foundStudent.setLoggedIn(false);
 
         return ResponseEntity.ok().body("Student with email: " + email + " logged out successfully!");
+    }
+
+    @PostMapping("saveAll")
+    public ResponseEntity<Map<String, List<String>>> registerMultipleStudentsApi(
+            @RequestBody List<StudentRegisterRequest> registerRequests
+    ) {
+        final Map<String, List<String>> unSavedStudents = new HashMap<>();
+
+        for (StudentRegisterRequest registerRequest : registerRequests) {
+            final ResponseEntity<List<String>> response = signupApi(registerRequest);
+
+            if (response.getStatusCode() != HttpStatus.OK) {
+                unSavedStudents.put(registerRequest.getEmail(), response.getBody());
+            }
+        }
+
+        return ResponseEntity.ok(unSavedStudents);
     }
 }
