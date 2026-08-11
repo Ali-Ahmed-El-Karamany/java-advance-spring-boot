@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StudentRepository {
     public static final Map<UUID, Student> STUDENTS_DB = new ConcurrentHashMap<>();
 
-    public static void save(Student student) {
+    public static void save(final Student student) {
         STUDENTS_DB.put(student.getId(), student);
     }
 

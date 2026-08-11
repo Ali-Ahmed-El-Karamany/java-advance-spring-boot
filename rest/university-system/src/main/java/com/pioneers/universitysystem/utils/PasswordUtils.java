@@ -25,4 +25,11 @@ public class PasswordUtils {
 
         return Base64.getEncoder().encodeToString(hash);
     }
+
+    public static boolean isPasswordMatched(
+            final String password, final String storedPassword
+    ) throws CredentialsExceptions {
+        final String hashedPassword =  hashPassword(password);
+        return hashedPassword.equals(storedPassword);
+    }
 }
