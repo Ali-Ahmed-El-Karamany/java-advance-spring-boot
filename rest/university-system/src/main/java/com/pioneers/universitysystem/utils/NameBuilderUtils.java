@@ -6,6 +6,6 @@ public class NameBuilderUtils {
     }
 
     public static String buildFullName(final String firstName, final String lastName) {
-        return firstName + lastName;
+        return firstName + " " + lastName;
     }
 }
