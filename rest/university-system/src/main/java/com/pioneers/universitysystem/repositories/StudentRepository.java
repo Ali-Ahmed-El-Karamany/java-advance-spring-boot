@@ -2,6 +2,7 @@ package com.pioneers.universitysystem.repositories;
 
 import com.pioneers.universitysystem.models.entities.Student;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,5 +19,9 @@ public class StudentRepository {
         return STUDENTS_DB.values().stream()
                 .filter(student -> student.getEmail().equals(email))
                 .findFirst();
+    }
+
+    public static Collection<Student> findAll() {
+        return STUDENTS_DB.values();
     }
 }

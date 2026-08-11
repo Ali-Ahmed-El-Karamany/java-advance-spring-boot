@@ -3,7 +3,9 @@ package com.pioneers.universitysystem.controllers;
 import com.pioneers.universitysystem.errors.exceptions.CredentialsExceptions;
 import com.pioneers.universitysystem.models.dtos.requests.StudentLoginRequest;
 import com.pioneers.universitysystem.models.dtos.requests.StudentRegisterRequest;
+import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
 import com.pioneers.universitysystem.models.entities.Student;
+import com.pioneers.universitysystem.utils.Mappers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 import static com.pioneers.universitysystem.repositories.StudentRepository.*;
+import static com.pioneers.universitysystem.utils.Mappers.toStudentResponse;
 import static com.pioneers.universitysystem.utils.NameBuilderUtils.buildFullName;
 import static com.pioneers.universitysystem.utils.PasswordUtils.hashPassword;
 import static com.pioneers.universitysystem.utils.PasswordUtils.isPasswordMatched;
@@ -111,5 +114,19 @@ public class StudentController {
         }
 
         return ResponseEntity.ok(unSavedStudents);
+    }
+
+    @GetMapping("findAll")
+    public ResponseEntity<?> findAllStudentsApi() {
+        final Collection<Student> allStudents = findAll();
+
+        if(allStudents.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No registered students");
+        }
+
+        final List<StudentResponse> studentResponses = allStudents.stream()
+                .map(Mappers::toStudentResponse).toList();
+
+        return ResponseEntity.ok(studentResponses);
     }
 }
