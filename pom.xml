@@ -20,8 +20,9 @@
 
     <modules>
         <module>library-managment</module>
-        <module>training-system</module>
         <module>rest/university-system</module>
+        <module>training-system</module>
+        <module>design-patterns</module>
     </modules>
 
     <properties>
