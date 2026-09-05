@@ -19,10 +19,11 @@
 
 
     <modules>
+        <module>design-patterns</module>
+        <module>dsa</module>
         <module>library-managment</module>
         <module>rest/university-system</module>
         <module>training-system</module>
-        <module>design-patterns</module>
     </modules>
 
     <properties>
