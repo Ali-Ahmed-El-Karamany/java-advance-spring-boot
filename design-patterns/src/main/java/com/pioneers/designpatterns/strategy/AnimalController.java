@@ -11,19 +11,34 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("animalService")
 public class AnimalController {
 
-    private final AnimalProcessor animalProcessor;
+    private final AnimalProcessor2 animalProcessor;
 
     @GetMapping("feed/{animalName}")
     public String feedAnimalApi(@PathVariable String animalName) {
 
-        animalProcessor.feedAnimal();
+        try {
+            final AnimalType animal = AnimalType.toAnimal(animalName);
+
+            animalProcessor.feedAnimal(animal);
+
+        } catch (AnimalType.AnimalException e) {
+            return e.getMessage();
+        }
 
         return "Successfully feed animal";
     }
 
     @GetMapping("makeSound/{animalName}")
     public String makeSoundApi(@PathVariable String animalName) {
-        animalProcessor.makeSound();
+
+        try {
+            final AnimalType animal = AnimalType.toAnimal(animalName);
+
+            animalProcessor.makeSound(animal);
+        } catch (AnimalType.AnimalException e) {
+            return e.getMessage();
+        }
+
         return "Successfully made animal sound";
     }
 }

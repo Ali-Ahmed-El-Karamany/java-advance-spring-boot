@@ -6,8 +6,15 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class Tiger implements AnimalStrategy {
+    private static final AnimalType TIGER = AnimalType.TIGER;
+
     public Tiger() {
         log.debug("Tiger bean created");
+    }
+
+    @Override
+    public boolean isTypeAligned(AnimalType animal) {
+        return TIGER.isAnimalType(animal);
     }
 
     @Override

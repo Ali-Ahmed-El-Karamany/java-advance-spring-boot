@@ -21,6 +21,10 @@ public enum AnimalType {
                 .orElseThrow(() -> new AnimalException(animalType + " is not listed in our system"));
     }
 
+    public boolean isAnimalType(final AnimalType animalType) {
+        return this.getAnimalType().equalsIgnoreCase(animalType.getAnimalType());
+    }
+
     public static class AnimalException extends RuntimeException {
         public AnimalException(String message) {
             super(message);
