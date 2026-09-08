@@ -15,6 +15,10 @@ public class ShapeFactory {
             return new Square();
         }
 
-        return new Triangle();
+        if (ShapeType.Triangle.equals(type)) {
+            return new Triangle();
+        }
+
+        throw new ShapeType.ShapeException("Invalid Shape Type");
     }
 }

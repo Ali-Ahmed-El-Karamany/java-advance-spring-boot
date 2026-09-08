@@ -18,6 +18,12 @@ public enum ShapeType {
         return Arrays.stream(ShapeType.values())
                 .filter(shapeType -> shapeType.getShapeName().equalsIgnoreCase(shapeName))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Shape Type"));
+                .orElseThrow(() -> new ShapeException("Invalid Shape Type"));
+    }
+
+    public static class ShapeException extends RuntimeException {
+        public ShapeException(String message) {
+            super(message);
+        }
     }
 }
