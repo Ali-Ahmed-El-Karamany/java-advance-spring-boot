@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("animalService")
 public class AnimalController {
 
-    private final AnimalProcessor2 animalProcessor;
+    private final AnimalProcessor3 animalProcessor;
 
     @GetMapping("feed/{animalName}")
     public String feedAnimalApi(@PathVariable String animalName) {

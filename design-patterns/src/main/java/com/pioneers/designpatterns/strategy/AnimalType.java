@@ -2,10 +2,12 @@ package com.pioneers.designpatterns.strategy;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 
 @Getter
+@Slf4j
 @RequiredArgsConstructor
 public enum AnimalType {
     LION("lion"),
@@ -18,7 +20,10 @@ public enum AnimalType {
         return Arrays.stream(AnimalType.values())
                 .filter(animal -> animal.getAnimalType().equalsIgnoreCase(animalType))
                 .findFirst()
-                .orElseThrow(() -> new AnimalException(animalType + " is not listed in our system"));
+                .orElseThrow(() -> {
+                        log.debug("{} is not listed in the system", animalType);
+                        return new AnimalException(animalType + " is not listed in our system");
+                });
     }
 
     public boolean isAnimalType(final AnimalType animalType) {
