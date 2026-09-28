@@ -7,8 +7,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Optional;
 
-public class PasswordUtils {
+public final class PasswordUtils {
+
     private PasswordUtils() {
+        throw new AssertionError("Utility Class");
     }
 
     public static String hashPassword(final String password) throws CredentialsExceptions {

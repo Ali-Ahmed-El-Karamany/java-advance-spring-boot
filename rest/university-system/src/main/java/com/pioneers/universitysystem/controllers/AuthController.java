@@ -1,140 +1,101 @@
 package com.pioneers.universitysystem.controllers;
 
-import com.pioneers.universitysystem.errors.exceptions.CredentialsExceptions;
+import com.pioneers.universitysystem.errors.exceptions.LoginException;
+import com.pioneers.universitysystem.errors.exceptions.LogoutException;
+import com.pioneers.universitysystem.errors.exceptions.RegistrationException;
+import com.pioneers.universitysystem.errors.exceptions.ValidationException;
 import com.pioneers.universitysystem.models.dtos.requests.StudentLoginRequest;
 import com.pioneers.universitysystem.models.dtos.requests.StudentRegisterRequest;
 import com.pioneers.universitysystem.models.dtos.responses.GenericResponse;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
-import com.pioneers.universitysystem.models.entities.Student;
-import com.pioneers.universitysystem.utils.Mappers;
-import org.springframework.http.HttpStatus;
+import com.pioneers.universitysystem.services.AuthService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
 
-import static com.pioneers.universitysystem.repositories.StudentRepository.findByEmail;
-import static com.pioneers.universitysystem.repositories.StudentRepository.save;
-import static com.pioneers.universitysystem.utils.NameBuilderUtils.buildFullName;
-import static com.pioneers.universitysystem.utils.PasswordUtils.hashPassword;
-import static com.pioneers.universitysystem.utils.PasswordUtils.isPasswordMatched;
-import static com.pioneers.universitysystem.utils.validators.StudentValidator.validateRegisterRequest;
-
+@Slf4j
 @RestController
 @RequestMapping("auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @PostMapping("signUp")
-    public ResponseEntity<GenericResponse<List<String>>> signupApi(
+    private final AuthService authService;
+
+    @PostMapping("signup")
+    public ResponseEntity<List<String>> signupApi(
             @RequestBody final StudentRegisterRequest registerRequest) {
 
-        final List<String> errors = validateRegisterRequest(registerRequest);
+        final String methodName = "signupApi";
+        log.info("{}, Registering [{}]", methodName, registerRequest.email());
 
-        if (!errors.isEmpty()) {
-            return ResponseEntity.badRequest().body(new GenericResponse<>("Registration failed", errors));
-        }
-
-        final Optional<Student> optionalStudent = findByEmail(registerRequest.getEmail());
-        if (optionalStudent.isPresent()) {
-            return ResponseEntity.badRequest()
-                    .body(new GenericResponse<>("Student is already registered", List.of(registerRequest.getEmail())));
-        }
-
-        final String fullName = buildFullName(registerRequest.getFirstName(), registerRequest.getLastName());
-
-        final String hashedPassword;
         try {
-            hashedPassword = hashPassword(registerRequest.getPassword());
-        } catch (CredentialsExceptions e) {
-            return ResponseEntity.badRequest().build();
+            authService.signup(registerRequest);
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest().body(e.getErrors());
+        } catch (RegistrationException e) {
+            return ResponseEntity.badRequest().body(List.of(e.getMessage()));
         }
 
-        final Student student =
-                new Student(UUID.randomUUID(), fullName, registerRequest.getAge(),
-                        registerRequest.getEmail(), hashedPassword, false, 0.0F, 0.0F);
+        log.info("{}, Successfully registered student with email [{}]", methodName, registerRequest.email());
 
-        save(student);
-        return ResponseEntity.ok(
-                new GenericResponse<>("Student Registered Successfully", List.of(registerRequest.getEmail())));
+        return ResponseEntity.ok(List.of("Student Registered Successfully with email: " + registerRequest.email()));
     }
 
     @PostMapping("login")
-    public ResponseEntity<GenericResponse<String>> loginApi(@RequestBody StudentLoginRequest loginRequest) {
-        final Optional<Student> optionalStudent = findByEmail(loginRequest.getEmail());
+    public ResponseEntity<String> loginApi(@RequestBody StudentLoginRequest loginRequest) {
 
-        if (optionalStudent.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(new GenericResponse<>("Student not registered", loginRequest.getEmail()));
-        }
+        final String methodName = "loginApi";
+        log.info("{}, Login [{}]", methodName, loginRequest.email());
 
-        final Student foundStudent = optionalStudent.get();
         try {
-            if (!isPasswordMatched(loginRequest.getPassword(), foundStudent.getPassword())) {
-                return ResponseEntity.badRequest()
-                        .body(new GenericResponse<>("Wrong password",  loginRequest.getEmail()));
-            }
-        } catch (CredentialsExceptions e) {
-            return ResponseEntity.badRequest()
-                    .body(new GenericResponse<>("Something went wrong",  loginRequest.getEmail()));
+            authService.login(loginRequest);
+        } catch (LoginException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
-        if (foundStudent.isLoggedIn()) {
-            return ResponseEntity.badRequest()
-                    .body(new GenericResponse<>("Already logged in", loginRequest.getEmail()));
-        }
+        log.info("{}, Student successfully logged in with email [{}]", methodName, loginRequest.email());
 
-        foundStudent.setLoggedIn(true);
-
-        return ResponseEntity.ok()
-                .body(new GenericResponse<>("Student logged in successfully", loginRequest.getEmail()));
+        return ResponseEntity.ok().body("Student logged in successfully with email: " + loginRequest.email());
     }
 
     @PostMapping("logout/{studentEmail}")
-    public ResponseEntity<GenericResponse<String>> logoutApi(@PathVariable("studentEmail") String email) {
-        final Optional<Student> optionalStudent = findByEmail(email);
+    public ResponseEntity<String> logoutApi(@PathVariable("studentEmail") String email) {
 
-        if (optionalStudent.isEmpty()) {
-            return ResponseEntity.badRequest().body(new GenericResponse<String>(
-                    "Student not registered: ", email));
+        final String methodName = "logoutApi";
+        log.info("{}, Logout [{}]", methodName, email);
+
+        try {
+            authService.logout(email);
+
+            log.info("{}, Student with email [{}] successfully logged out", methodName, email);
+
+            return ResponseEntity.ok().body("Student with email [" + email + " ] logged out successfully");
+        } catch (LogoutException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        final Student foundStudent = optionalStudent.get();
-        if (!foundStudent.isLoggedIn()) {
-            return ResponseEntity.badRequest().body(new GenericResponse<>("Student already logged out",  email));
-        }
-
-        foundStudent.setLoggedIn(false);
-
-        return ResponseEntity.ok().body(new GenericResponse<>("Student logged out successfully", email));
     }
 
     @PostMapping("saveAll")
-    public ResponseEntity<?> registerMultipleStudentsApi(
+    public ResponseEntity<?> saveAllApi(
             @RequestBody List<StudentRegisterRequest> registerRequests
     ) {
-        final List<Student> registeredStudents = new ArrayList<>();
+        final String methodName = "saveAllApi";
+        log.info("{}, Saving [{}]", methodName, registerRequests);
 
-        registerRequests.forEach(registerRequest -> {
-            Optional<Student> optionalStudent = findByEmail(registerRequest.getEmail());
+        try {
+            GenericResponse<List<StudentResponse>> response = authService.saveAll(registerRequests);
 
-            if (optionalStudent.isPresent()) {
-                registeredStudents.add(optionalStudent.get());
-                return;
-            }
-            signupApi(registerRequest);
-        });
+            log.info("{}, Successfully saved student [{}]", methodName, registerRequests);
 
-        if (registeredStudents.isEmpty()) {
-            return ResponseEntity.ok("Successfully all registeredStudents successfully!");
+            return ResponseEntity.ok(response);
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest().body(e.getErrors());
+        } catch (RegistrationException e) {
+            return ResponseEntity.badRequest().body(List.of(e.getMessage()));
         }
-
-        final List<StudentResponse> rejectedStudents = registeredStudents.stream()
-                .map(Mappers::toStudentResponse)
-                .toList();
-
-        final GenericResponse<List<StudentResponse>> response =
-                new GenericResponse<>("Those list are rejected to be inserted",  rejectedStudents);
-
-        return ResponseEntity.ok(response);
     }
 }

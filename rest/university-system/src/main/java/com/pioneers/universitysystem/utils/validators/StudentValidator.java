@@ -7,8 +7,10 @@ import java.util.List;
 
 import static com.pioneers.universitysystem.utils.StringUtils.isNullOrBlank;
 
-public class StudentValidator {
+public final class StudentValidator {
+
     private StudentValidator() {
+        throw new AssertionError("Utility Class");
     }
 
     public static List<String> validateRegisterRequest(
@@ -16,23 +18,23 @@ public class StudentValidator {
     ) {
         final List<String> errorList = new ArrayList<>();
 
-        if (isNullOrBlank(request.getFirstName())) {
+        if (isNullOrBlank(request.firstName())) {
             errorList.add("First name is empty");
         }
 
-        if (isNullOrBlank(request.getLastName())) {
+        if (isNullOrBlank(request.lastName())) {
             errorList.add("Last name is empty");
         }
 
-        if (!isEligible(request.getAge())) {
+        if (!isEligible(request.age())) {
             errorList.add("Age is out of range");
         }
 
-        if (isInvalidEmail(request.getEmail())) {
+        if (isInvalidEmail(request.email())) {
             errorList.add("Email is Invalid");
         }
 
-        if (isPasswordInvalid(request.getPassword())) {
+        if (isPasswordInvalid(request.password())) {
             errorList.add("Password is Invalid");
         }
 

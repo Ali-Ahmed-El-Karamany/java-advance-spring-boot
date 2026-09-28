@@ -1,94 +1,124 @@
 package com.pioneers.universitysystem.controllers;
 
-import com.pioneers.universitysystem.errors.exceptions.CredentialsExceptions;
+import com.pioneers.universitysystem.errors.exceptions.StudentException;
 import com.pioneers.universitysystem.models.dtos.requests.StudentUpdateRequest;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
-import com.pioneers.universitysystem.models.entities.Student;
-import com.pioneers.universitysystem.utils.Mappers;
+import com.pioneers.universitysystem.services.StudentService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
-import static com.pioneers.universitysystem.repositories.StudentRepository.*;
-import static com.pioneers.universitysystem.utils.Mappers.toStudentResponse;
-import static com.pioneers.universitysystem.utils.NameBuilderUtils.buildFullName;
-import static com.pioneers.universitysystem.utils.PasswordUtils.hashPassword;
-
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("student")
 public class StudentController {
-    @GetMapping("findAll")
-    public ResponseEntity<?> findAllStudentsApi() {
-        final Collection<Student> allStudents = findAll();
+    private final StudentService studentService;
 
-        if (allStudents.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No registered students");
+    @GetMapping("findAll")
+    public ResponseEntity<?> findAllApi() {
+
+        final String methodName =  "findAllApi";
+        log.info("{}, Fetching registered students",methodName);
+
+        final List<StudentResponse> allStudents;
+
+        try {
+            allStudents = studentService.findAll();
+
+        } catch (StudentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
-        final List<StudentResponse> studentResponses = allStudents.stream()
-                .map(Mappers::toStudentResponse).toList();
+        log.info("{}, Successfully fetched registered students", methodName);
 
-        return ResponseEntity.ok(studentResponses);
+        return ResponseEntity.ok(allStudents);
     }
 
     @GetMapping("findById/{id}")
     public ResponseEntity<?> findByIdApi(@PathVariable("id") UUID id) {
-        final Optional<Student> optionalStudent = findById(id);
+        final String methodName =  "findByIdApi";
+        log.info("{}, Finding student with ID [{}]",methodName, id);
 
-        if (optionalStudent.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
+        try {
+            final StudentResponse foundStudent = studentService.findById(id);
+
+            log.info("{}, Successfully found student with ID [{}]",methodName, id);
+
+            return ResponseEntity.ok(foundStudent);
+        } catch (StudentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("findAllSucceededStudents")
+    public ResponseEntity<?> findAllSucceededStudentsApi() {
+        final String methodName =  "findAllSucceededStudentsApi";
+        log.info("{}, Fetching succeeded Students",methodName);
+
+        final List<StudentResponse> succeededStudents;
+
+        try {
+            succeededStudents = studentService.findAllSucceeded();
+
+            log.info("{}, Successfully fetched succeeded Students: {}", methodName,  succeededStudents);
+        } catch (StudentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
-        final StudentResponse studentResponse = toStudentResponse(optionalStudent.get());
-
-        return ResponseEntity.ok(studentResponse);
+        return ResponseEntity.ok(succeededStudents);
     }
 
     @PutMapping("update/{id}")
-    public ResponseEntity<String> updateApi(
+    public ResponseEntity<?> updateApi(
             @PathVariable("id") UUID id, @RequestBody StudentUpdateRequest updateRequest
     ) {
-        final Optional<Student> optionalStudent = findById(id);
-        if (optionalStudent.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
-        }
+        final String methodName =  "updateApi";
+        log.info("{}, updating Student with email {} ", methodName, updateRequest.email());
 
-        final String updatedFullName = buildFullName(updateRequest.getFirstName(), updateRequest.getLastName());
-
+        final StudentResponse updatedStudent;
         try {
-            final String updatedHashedPassword = hashPassword(updateRequest.getPassword());
-        } catch (CredentialsExceptions e) {
-            return ResponseEntity.badRequest().body("Something went wrong");
+            updatedStudent = studentService.update(id,updateRequest);
+
+            log.info("{}, Successfully updated student: {}",methodName, updatedStudent);
+        } catch (StudentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
-        final Student foundStudent = optionalStudent.get();
-
-        foundStudent.setFullName(updatedFullName);
-        foundStudent.setAge(updateRequest.getAge());
-        foundStudent.setEmail(updateRequest.getEmail());
-        foundStudent.setPassword(updateRequest.getPassword());
-        foundStudent.setScore(updateRequest.getScore());
-
-        return ResponseEntity.ok("Successfully updated student with email: " + foundStudent.getEmail());
+        return ResponseEntity.ok(updatedStudent);
     }
 
     @DeleteMapping("delete/{id}")
     public ResponseEntity<String> deleteApi(@PathVariable UUID id) {
-        final Optional<Student> optionalStudent = findById(id);
-        if (optionalStudent.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
+        final String methodName =  "deleteApi";
+        log.info("{}, Deleting student with ID [{}]",methodName, id);
+
+        final StudentResponse deletedStudent;
+        try {
+            deletedStudent = studentService.delete(id);
+
+            log.info("{}, Successfully deleted student with email {}",methodName, deletedStudent.email());
+        } catch (StudentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
-        delete(id);
-
-        return ResponseEntity.ok("Successfully deleted student with email: " + optionalStudent.get().getEmail());
+        return ResponseEntity.ok("Successfully deleted student with email: " + deletedStudent.email());
     }
 
     @DeleteMapping("deleteAll")
     public ResponseEntity<String> deleteAllApi() {
-        deleteAll();
+        final String methodName =  "deleteAllApi";
+        log.info("{}, Deleting all students",methodName);
+
+        studentService.deleteAll();
+
+        log.info("{}, Successfully deleted all students",methodName);
 
         return ResponseEntity.ok("Successfully deleted all students");
     }

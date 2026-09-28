@@ -2,38 +2,25 @@ package com.pioneers.universitysystem.repositories;
 
 import com.pioneers.universitysystem.models.entities.Student;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class StudentRepository {
-    public static final Map<UUID, Student> STUDENTS_DB = new ConcurrentHashMap<>();
+public interface StudentRepository {
 
-    public static void save(final Student student) {
-        STUDENTS_DB.put(student.getId(), student);
-    }
+    void save(Student student);
 
-    public static void delete(final UUID id) {
-        STUDENTS_DB.remove(id);
-    }
+    void update(UUID id, Student student);
 
-    public static void deleteAll() {
-        STUDENTS_DB.clear();
-    }
+    void delete(UUID id);
 
-    public static Optional<Student> findByEmail(final String email) {
-        return STUDENTS_DB.values().stream()
-                .filter(student -> student.getEmail().equals(email))
-                .findFirst();
-    }
+    void deleteAll();
 
-    public static Optional<Student> findById(final UUID id) {
-        return Optional.ofNullable(STUDENTS_DB.get(id));
-    }
+    Optional<Student> findByEmail(String email);
 
-    public static Collection<Student> findAll() {
-        return STUDENTS_DB.values();
-    }
+    Optional<Student> findById(UUID id);
+
+    List<Student> findAllSortedByAge();
+
+    List<Student> findAllSucceeded();
 }
