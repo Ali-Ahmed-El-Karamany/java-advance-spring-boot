@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.pioneers.universitysystem.utils.NameBuilder.buildFullName;
 import static com.pioneers.universitysystem.utils.PasswordUtils.hashPassword;
@@ -33,20 +34,21 @@ public class AuthServiceImpl implements AuthService {
     public void signup(final StudentRegisterRequest registerRequest) throws ValidationException, RegistrationException {
         final String methodName = "signup";
 
-        final List<String> errors = validateRegisterRequest(registerRequest);
+        final Map<String, String> errors = validateRegisterRequest(registerRequest);
 
         if (!errors.isEmpty()) {
             final String logMessage = String.format("%s, Registration failed for email: %s due to: %s",
                     methodName, registerRequest.email(), errors);
 
-            throw new ValidationException("Request Validation Exception", logMessage, errors);
+            throw new ValidationException("Invalid Registration Data", logMessage, errors);
         }
 
         studentRepository.findByEmail(registerRequest.email()).ifPresent(student -> {
             final String logMessage = String.format("%s, Registration failed: [%s] is already registered",
                     methodName, student.getEmail());
 
-            throw new RegistrationException("Registration Exception", logMessage);
+            throw new RegistrationException(
+                    String.format("Student with email [%s] is already registered", registerRequest.email()), logMessage);
         });
 
         final String fullName = buildFullName(registerRequest.firstName(), registerRequest.lastName());
@@ -80,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
                     final String logMessage = String.format("%s, Student with email [%s] is not registered",
                             methodName, loginRequest.email());
 
-                    return new LoginException("Login Exception, student not registered", logMessage);
+                    return new LoginException("Student is not registered", logMessage);
                 });
 
         try {
@@ -88,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
                 final String logMessage = String.format("%s, password does not match for this email [%s]",
                         methodName, loginRequest.email());
 
-                throw new LoginException("Login Exception, Wrong Password", logMessage);
+                throw new LoginException("Wrong Password", logMessage);
             }
         } catch (CredentialsExceptions e) {
             final String logMessage = String.format("%s, Cannot hash password for  [%s] due to: [%s]",
@@ -101,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
             final String logMessage = String.format("%s, Student with email [%s] already logged in",
                     methodName, loginRequest.email());
 
-            throw new LoginException("Login Exception, Already logged in", logMessage);
+            throw new LoginException("Student already logged in", logMessage);
         }
 
         foundStudent.login();
@@ -119,14 +121,14 @@ public class AuthServiceImpl implements AuthService {
                     final String logMessage = String.format("%s, Student with email [%s] is not registered",
                             methodName, email);
 
-                    return new LoginException("Logout Exception, student not registered", logMessage);
+                    return new LoginException("Student not registered", logMessage);
                 });
 
         if (!foundStudent.isLoggedIn()) {
             final String logMessage = String.format("%s, Student with email [%s] already logged out",
                     methodName, email);
 
-            throw new LogoutException("Logout Exception, Already logged out", logMessage);
+            throw new LogoutException("Student already logged out", logMessage);
         }
 
         foundStudent.logout();
@@ -157,7 +159,7 @@ public class AuthServiceImpl implements AuthService {
                 .map(Mappers::toStudentResponse)
                 .toList();
 
-        log.debug("Those students are already registered registered {}", rejectedStudents);
+        log.debug("Those students are already registered {}", rejectedStudents);
         return new GenericResponse<>("Those students are already registered registered", rejectedStudents);
     }
 }

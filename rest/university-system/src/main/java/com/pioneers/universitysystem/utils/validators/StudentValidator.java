@@ -2,8 +2,8 @@ package com.pioneers.universitysystem.utils.validators;
 
 import com.pioneers.universitysystem.models.dtos.requests.StudentRegisterRequest;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.pioneers.universitysystem.utils.StringUtils.isNullOrBlank;
 
@@ -13,32 +13,32 @@ public final class StudentValidator {
         throw new AssertionError("Utility Class");
     }
 
-    public static List<String> validateRegisterRequest(
+    public static Map<String, String> validateRegisterRequest(
             final StudentRegisterRequest request
     ) {
-        final List<String> errorList = new ArrayList<>();
+        final Map<String, String> errors = new HashMap<>();
 
         if (isNullOrBlank(request.firstName())) {
-            errorList.add("First name is empty");
+            errors.put("firstName", "First name is required");
         }
 
         if (isNullOrBlank(request.lastName())) {
-            errorList.add("Last name is empty");
+            errors.put("lastName", "Last name is required");
         }
 
         if (!isEligible(request.age())) {
-            errorList.add("Age is out of range");
+            errors.put("age", "Age is out of range");
         }
 
         if (isInvalidEmail(request.email())) {
-            errorList.add("Email is Invalid");
+            errors.put("email", "must be a valid email address");
         }
 
         if (isPasswordInvalid(request.password())) {
-            errorList.add("Password is Invalid");
+            errors.put("password", "Invalid Password");
         }
 
-        return errorList;
+        return errors;
     }
 
     private static boolean isEligible(final int age) {
