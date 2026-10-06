@@ -14,15 +14,21 @@ public final class PasswordUtils {
     }
 
     public static String hashPassword(final String password) throws CredentialsExceptions {
+        final String methodName = "hashPassword";
+
         Optional.ofNullable(password).
-                orElseThrow(() -> new CredentialsExceptions("Password cannot be null"));
+                orElseThrow(() -> {
+                    final String logMessage = String.format("%s, Password can not be null", methodName);
+                    return new CredentialsExceptions("Password cannot be null", logMessage);
+                });
 
         byte[] hash;
         try {
             final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
             hash = messageDigest.digest(password.getBytes());
         } catch (NoSuchAlgorithmException e) {
-            throw new CredentialsExceptions("SHA-256 algorithm not found");
+            final String LogMessage = String.format("%s Hash Algorithm Not Supported", methodName);
+            throw new CredentialsExceptions("SHA-256 algorithm not found", LogMessage);
         }
 
         return Base64.getEncoder().encodeToString(hash);
@@ -31,7 +37,7 @@ public final class PasswordUtils {
     public static boolean isPasswordMatched(
             final String password, final String storedPassword
     ) throws CredentialsExceptions {
-        final String hashedPassword =  hashPassword(password);
+        final String hashedPassword = hashPassword(password);
         return hashedPassword.equals(storedPassword);
     }
 }

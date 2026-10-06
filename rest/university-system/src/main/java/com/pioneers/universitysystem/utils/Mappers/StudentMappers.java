@@ -1,4 +1,4 @@
-package com.pioneers.universitysystem.utils;
+package com.pioneers.universitysystem.utils.Mappers;
 
 import com.pioneers.universitysystem.models.dtos.requests.StudentRegisterRequest;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
@@ -6,8 +6,8 @@ import com.pioneers.universitysystem.models.entities.Student;
 
 import static com.pioneers.universitysystem.utils.NameBuilder.buildFullName;
 
-public final class Mappers {
-    private Mappers() {
+public final class StudentMappers {
+    private StudentMappers() {
         throw new AssertionError("Utility class");
     }
 

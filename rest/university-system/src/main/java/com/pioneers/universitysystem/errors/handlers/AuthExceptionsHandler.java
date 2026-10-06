@@ -1,5 +1,6 @@
 package com.pioneers.universitysystem.errors.handlers;
 
+import com.pioneers.universitysystem.errors.exceptions.CredentialsExceptions;
 import com.pioneers.universitysystem.errors.exceptions.LoginException;
 import com.pioneers.universitysystem.errors.exceptions.LogoutException;
 import com.pioneers.universitysystem.errors.exceptions.RegistrationException;
@@ -44,6 +45,18 @@ public class AuthExceptionsHandler {
         return ErrorResponse.builder()
                 .status(LogoutException.STATUS_CODE)
                 .error(LogoutException.ERROR)
+                .description(e.getMessage())
+                .timestamp(e.getTimestamp())
+                .errors(Optional.empty())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(CredentialsExceptions.class)
+    public ErrorResponse<?> handleCredentialsExceptions(final CredentialsExceptions e) {
+        return ErrorResponse.builder()
+                .status(CredentialsExceptions.STATUS_CODE)
+                .error(CredentialsExceptions.ERROR)
                 .description(e.getMessage())
                 .timestamp(e.getTimestamp())
                 .errors(Optional.empty())

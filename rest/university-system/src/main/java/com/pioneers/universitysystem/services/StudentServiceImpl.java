@@ -1,12 +1,11 @@
 package com.pioneers.universitysystem.services;
 
-import com.pioneers.universitysystem.errors.exceptions.CredentialsExceptions;
 import com.pioneers.universitysystem.errors.exceptions.StudentException;
 import com.pioneers.universitysystem.models.dtos.requests.StudentUpdateRequest;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
 import com.pioneers.universitysystem.models.entities.Student;
 import com.pioneers.universitysystem.repositories.StudentRepository;
-import com.pioneers.universitysystem.utils.Mappers;
+import com.pioneers.universitysystem.utils.Mappers.StudentMappers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-import static com.pioneers.universitysystem.utils.Mappers.toStudentResponse;
+import static com.pioneers.universitysystem.utils.Mappers.StudentMappers.toStudentResponse;
 import static com.pioneers.universitysystem.utils.NameBuilder.buildFullName;
 import static com.pioneers.universitysystem.utils.PasswordUtils.hashPassword;
 
@@ -41,7 +40,7 @@ public class StudentServiceImpl implements StudentService {
         log.debug("{}, Successfully fetched {} registered students from DB", methodName, registeredStudents.size());
 
         return registeredStudents.stream()
-                .map(Mappers::toStudentResponse).toList();
+                .map(StudentMappers::toStudentResponse).toList();
     }
 
     @Override
@@ -66,13 +65,13 @@ public class StudentServiceImpl implements StudentService {
         final List<Student> succeededStudents = studentRepository.findAllSucceeded();
 
         if (succeededStudents.isEmpty()) {
-            final String logMessage =  String.format("%s, There are no succeeded students found", methodName);
+            final String logMessage = String.format("%s, There are no succeeded students found", methodName);
 
             throw new StudentException("No succeeded students found", logMessage);
         }
 
         return succeededStudents.stream()
-                .map(Mappers::toStudentResponse)
+                .map(StudentMappers::toStudentResponse)
                 .toList();
 
     }
@@ -90,14 +89,7 @@ public class StudentServiceImpl implements StudentService {
         final String updatedFullName = buildFullName(updateRequest.firstName(), updateRequest.lastName());
         final String updatedHashedPassword;
 
-        try {
-            updatedHashedPassword = hashPassword(updateRequest.password());
-        } catch (CredentialsExceptions e) {
-            final String logMessage = String.format("%s, Cannot hash password for student with ID  [%s] due to: [%s]",
-                    methodName, id, e.getMessage());
-
-            throw new StudentException(e.getMessage(), logMessage);
-        }
+        updatedHashedPassword = hashPassword(updateRequest.password());
 
         foundStudent.setFullName(updatedFullName);
         foundStudent.setAge(updateRequest.age());
@@ -130,7 +122,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void deleteAll() {
-        final String  methodName = "deleteAll";
+        final String methodName = "deleteAll";
 
         studentRepository.deleteAll();
 

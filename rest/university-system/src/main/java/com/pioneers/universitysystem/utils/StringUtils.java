@@ -1,6 +1,6 @@
 package com.pioneers.universitysystem.utils;
 
-public  final class StringUtils {
+public final class StringUtils {
     private StringUtils() {
         throw new AssertionError("Utility class");
     }

@@ -7,7 +7,7 @@ import com.pioneers.universitysystem.models.dtos.responses.GenericResponse;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
 import com.pioneers.universitysystem.models.entities.Student;
 import com.pioneers.universitysystem.repositories.StudentRepository;
-import com.pioneers.universitysystem.utils.Mappers;
+import com.pioneers.universitysystem.utils.Mappers.StudentMappers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,14 +54,7 @@ public class AuthServiceImpl implements AuthService {
         final String fullName = buildFullName(registerRequest.firstName(), registerRequest.lastName());
 
         final String hashedPassword;
-        try {
-            hashedPassword = hashPassword(registerRequest.password());
-        } catch (CredentialsExceptions e) {
-            final String logMessage = String.format("%s, Cannot hash password for  [%s] due to: [%s]",
-                    methodName, registerRequest.email(), e.getMessage());
-
-            throw new RegistrationException(e.getMessage(), logMessage);
-        }
+        hashedPassword = hashPassword(registerRequest.password());
 
         final Student student = buildRegisteredStudent(fullName, registerRequest.age(),
                 registerRequest.email(), hashedPassword);
@@ -85,18 +78,11 @@ public class AuthServiceImpl implements AuthService {
                     return new LoginException("Student is not registered", logMessage);
                 });
 
-        try {
-            if (!isPasswordMatched(loginRequest.password(), foundStudent.getPassword())) {
-                final String logMessage = String.format("%s, password does not match for this email [%s]",
-                        methodName, loginRequest.email());
+        if (!isPasswordMatched(loginRequest.password(), foundStudent.getPassword())) {
+            final String logMessage = String.format("%s, password does not match for this email [%s]",
+                    methodName, loginRequest.email());
 
-                throw new LoginException("Wrong Password", logMessage);
-            }
-        } catch (CredentialsExceptions e) {
-            final String logMessage = String.format("%s, Cannot hash password for  [%s] due to: [%s]",
-                    methodName, loginRequest.email(), e.getMessage());
-
-            throw new LoginException(e.getMessage(), logMessage);
+            throw new LoginException("Wrong Password", logMessage);
         }
 
         if (foundStudent.isLoggedIn()) {
@@ -152,11 +138,11 @@ public class AuthServiceImpl implements AuthService {
             log.debug("Successfully registered all students");
 
             return new GenericResponse<>("Successfully registered all students",
-                    registerRequests.stream().map(Mappers::toStudentResponse).toList());
+                    registerRequests.stream().map(StudentMappers::toStudentResponse).toList());
         }
 
         final List<StudentResponse> rejectedStudents = registeredStudents.stream()
-                .map(Mappers::toStudentResponse)
+                .map(StudentMappers::toStudentResponse)
                 .toList();
 
         log.debug("Those students are already registered {}", rejectedStudents);
