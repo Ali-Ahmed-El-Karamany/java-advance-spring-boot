@@ -4,7 +4,6 @@ import com.pioneers.universitysystem.errors.exceptions.StudentException;
 import com.pioneers.universitysystem.models.dtos.requests.StudentUpdateRequest;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 

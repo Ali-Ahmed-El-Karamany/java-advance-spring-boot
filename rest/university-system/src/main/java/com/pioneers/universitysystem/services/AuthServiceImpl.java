@@ -12,36 +12,27 @@ import com.pioneers.universitysystem.utils.Mappers.StudentMappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.pioneers.universitysystem.utils.NameBuilder.buildFullName;
 import static com.pioneers.universitysystem.utils.PasswordUtils.hashPassword;
-import static com.pioneers.universitysystem.utils.PasswordUtils.isPasswordMatched;
+import static com.pioneers.universitysystem.utils.PasswordUtils.matchPassword;
 import static com.pioneers.universitysystem.utils.StudentBuilder.buildRegisteredStudent;
-import static com.pioneers.universitysystem.utils.validators.StudentValidator.validateRegisterRequest;
 
 @Slf4j
 @Service
+@Validated
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final StudentRepository studentRepository;
 
     @Override
-    public void signup(final StudentRegisterRequest registerRequest) throws ValidationException, RegistrationException {
+    public void signup(final StudentRegisterRequest registerRequest) throws RegistrationException {
         final String methodName = "signup";
-
-        final Map<String, String> errors = validateRegisterRequest(registerRequest);
-
-        if (!errors.isEmpty()) {
-            final String logMessage = String.format("%s, Registration failed for email: %s due to: %s",
-                    methodName, registerRequest.email(), errors);
-
-            throw new ValidationException("Invalid Registration Data", logMessage, errors);
-        }
 
         studentRepository.findByEmail(registerRequest.email()).ifPresent(student -> {
             final String logMessage = String.format("%s, Registration failed: [%s] is already registered",
@@ -78,12 +69,7 @@ public class AuthServiceImpl implements AuthService {
                     return new LoginException("Student is not registered", logMessage);
                 });
 
-        if (!isPasswordMatched(loginRequest.password(), foundStudent.getPassword())) {
-            final String logMessage = String.format("%s, password does not match for this email [%s]",
-                    methodName, loginRequest.email());
-
-            throw new LoginException("Wrong Password", logMessage);
-        }
+        matchPassword(loginRequest.password(), foundStudent.getPassword());
 
         if (foundStudent.isLoggedIn()) {
             final String logMessage = String.format("%s, Student with email [%s] already logged in",
@@ -107,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
                     final String logMessage = String.format("%s, Student with email [%s] is not registered",
                             methodName, email);
 
-                    return new LoginException("Student not registered", logMessage);
+                    return new LogoutException("Student not registered", logMessage);
                 });
 
         if (!foundStudent.isLoggedIn()) {
@@ -124,7 +110,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public GenericResponse<List<StudentResponse>> saveAll(
-            final List<StudentRegisterRequest> registerRequests) throws ValidationException, RegistrationException {
+            final List<StudentRegisterRequest> registerRequests
+    ) throws RegistrationException {
+
         final String methodName = "saveAll";
 
         final List<Student> registeredStudents = new ArrayList<>();

@@ -1,12 +1,15 @@
 package com.pioneers.universitysystem.utils;
 
 import com.pioneers.universitysystem.errors.exceptions.CredentialsExceptions;
+import com.pioneers.universitysystem.errors.exceptions.PasswordMismatchException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Optional;
 
+@Slf4j
 public final class PasswordUtils {
 
     private PasswordUtils() {
@@ -34,10 +37,18 @@ public final class PasswordUtils {
         return Base64.getEncoder().encodeToString(hash);
     }
 
-    public static boolean isPasswordMatched(
+    public static void matchPassword(
             final String password, final String storedPassword
-    ) throws CredentialsExceptions {
+    ) throws CredentialsExceptions, PasswordMismatchException {
+
         final String hashedPassword = hashPassword(password);
-        return hashedPassword.equals(storedPassword);
+
+        if (!hashedPassword.equals(storedPassword)) {
+            final String logMessage = "Password does not match for this email";
+
+            throw new PasswordMismatchException("Wrong Password", logMessage);
+        }
+
+        log.debug("Password matched successfully");
     }
 }

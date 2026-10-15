@@ -40,7 +40,8 @@ public class StudentServiceImpl implements StudentService {
         log.debug("{}, Successfully fetched {} registered students from DB", methodName, registeredStudents.size());
 
         return registeredStudents.stream()
-                .map(StudentMappers::toStudentResponse).toList();
+                .map(StudentMappers::toStudentResponse)
+                .toList();
     }
 
     @Override
@@ -73,7 +74,6 @@ public class StudentServiceImpl implements StudentService {
         return succeededStudents.stream()
                 .map(StudentMappers::toStudentResponse)
                 .toList();
-
     }
 
     @Override

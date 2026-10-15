@@ -16,7 +16,7 @@ public final class StudentMappers {
     }
 
     public static StudentResponse toStudentResponse(final StudentRegisterRequest registerRequest) {
-        final String fullName = buildFullName(registerRequest.firstName(),  registerRequest.lastName());
+        final String fullName = buildFullName(registerRequest.firstName(), registerRequest.lastName());
 
         return new StudentResponse(fullName, registerRequest.age(), registerRequest.email());
     }

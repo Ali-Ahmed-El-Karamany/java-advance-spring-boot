@@ -6,6 +6,7 @@ import com.pioneers.universitysystem.models.dtos.responses.GenericResponse;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
 import com.pioneers.universitysystem.services.AuthService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("signup")
-    public String signupApi(@RequestBody final StudentRegisterRequest registerRequest) {
+    public String signupApi(@RequestBody @Valid final StudentRegisterRequest registerRequest) {
         final String methodName = "signupApi";
         log.info("{}, Registering [{}]", methodName, registerRequest.email());
 
@@ -33,7 +34,7 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public String loginApi(@RequestBody StudentLoginRequest loginRequest) {
+    public String loginApi(@RequestBody @Valid StudentLoginRequest loginRequest) {
         final String methodName = "loginApi";
         log.info("{}, Login [{}]", methodName, loginRequest.email());
 
@@ -58,7 +59,7 @@ public class AuthController {
 
     @PostMapping("saveAll")
     public GenericResponse<List<StudentResponse>> saveAllApi(
-            @RequestBody List<StudentRegisterRequest> registerRequests
+            @RequestBody List<@Valid StudentRegisterRequest> registerRequests
     ) {
         final String methodName = "saveAllApi";
         log.info("{}, Saving [{}]", methodName, registerRequests);
