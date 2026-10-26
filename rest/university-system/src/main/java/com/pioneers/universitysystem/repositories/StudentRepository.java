@@ -1,5 +1,6 @@
 package com.pioneers.universitysystem.repositories;
 
+import com.pioneers.universitysystem.errors.exceptions.RegistrationException;
 import com.pioneers.universitysystem.models.entities.Student;
 
 import java.util.List;
@@ -8,9 +9,11 @@ import java.util.UUID;
 
 public interface StudentRepository {
 
-    void save(Student student);
+    void save(Student student) throws RegistrationException;
 
-    void update(UUID id, Student student);
+    void update(Student student);
+
+    void updateAll(List<Student> students);
 
     void delete(UUID id);
 
@@ -23,4 +26,6 @@ public interface StudentRepository {
     List<Student> findAllSortedByAge();
 
     List<Student> findAllSucceeded();
+
+    boolean isEmailExists(final String email);
 }

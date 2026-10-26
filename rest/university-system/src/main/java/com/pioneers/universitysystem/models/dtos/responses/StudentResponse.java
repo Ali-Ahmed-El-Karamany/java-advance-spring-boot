@@ -1,5 +1,12 @@
 package com.pioneers.universitysystem.models.dtos.responses;
 
-public record StudentResponse(String fullName, int age, String email) {
+import java.util.Optional;
 
+public record StudentResponse(
+        String fullName,
+        int age,
+        String email,
+        float score,
+        Optional<AddressResponse> optionalAddressResponse
+) {
 }

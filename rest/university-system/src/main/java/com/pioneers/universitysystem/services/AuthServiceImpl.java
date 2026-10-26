@@ -44,11 +44,10 @@ public class AuthServiceImpl implements AuthService {
 
         final String fullName = buildFullName(registerRequest.firstName(), registerRequest.lastName());
 
-        final String hashedPassword;
-        hashedPassword = hashPassword(registerRequest.password());
+        final String hashedPassword = hashPassword(registerRequest.password());
 
         final Student student = buildRegisteredStudent(fullName, registerRequest.age(),
-                registerRequest.email(), hashedPassword);
+                registerRequest.email(), hashedPassword, registerRequest.addressRequest());
 
         studentRepository.save(student);
 
@@ -80,6 +79,8 @@ public class AuthServiceImpl implements AuthService {
 
         foundStudent.login();
 
+        studentRepository.update(foundStudent);
+
         log.debug("{}, Student with email: {} logged in successfully", methodName, foundStudent.getEmail());
     }
 
@@ -104,6 +105,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         foundStudent.logout();
+
+        studentRepository.update(foundStudent);
 
         log.debug("{}, Student with email: {} logged out successfully", methodName, foundStudent.getEmail());
     }
