@@ -11,6 +11,8 @@ public interface StudentService {
 
     List<StudentResponse> findAll() throws StudentException;
 
+    StudentResponse findByEmail(final String email) throws StudentException;
+
     StudentResponse findById(UUID id) throws  StudentException;
 
     List<StudentResponse> findAllSucceeded() throws StudentException;

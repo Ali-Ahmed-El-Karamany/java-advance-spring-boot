@@ -4,6 +4,7 @@ import com.pioneers.universitysystem.models.dtos.requests.StudentUpdateRequest;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
 import com.pioneers.universitysystem.services.StudentService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +19,24 @@ import java.util.UUID;
 public class StudentController {
     private final StudentService studentService;
 
+    @GetMapping("findByEmail/{email}")
+    public StudentResponse findByEmail(@PathVariable("email") String email) {
+        final String methodName = "findByIdApi";
+        log.info("{}, Finding student with email [{}]", methodName, email);
+
+        final StudentResponse foundStudent = studentService.findByEmail(email);
+
+        log.info("{}, Successfully found student with ID [{}]", methodName, email);
+
+        return foundStudent;
+    }
+
     @GetMapping("findAll")
     public List<StudentResponse> findAllApi() {
         final String methodName = "findAllApi";
         log.info("{}, Fetching registered students", methodName);
 
-        final List<StudentResponse> allStudents = studentService.findAll();;
+        final List<StudentResponse> allStudents = studentService.findAll();
 
         log.info("{}, Successfully fetched registered students", methodName);
 
@@ -47,7 +60,7 @@ public class StudentController {
         final String methodName = "findAllSucceededStudentsApi";
         log.info("{}, Fetching succeeded Students", methodName);
 
-        final List<StudentResponse> succeededStudents = studentService.findAllSucceeded();;
+        final List<StudentResponse> succeededStudents = studentService.findAllSucceeded();
 
         log.info("{}, Successfully fetched succeeded Students: {}", methodName, succeededStudents);
 
@@ -56,12 +69,12 @@ public class StudentController {
 
     @PutMapping("update/{id}")
     public StudentResponse updateApi(
-            @PathVariable("id") UUID id, @RequestBody StudentUpdateRequest updateRequest
+            @PathVariable("id") UUID id, @RequestBody @Valid StudentUpdateRequest updateRequest
     ) {
         final String methodName = "updateApi";
         log.info("{}, updating Student with email {} ", methodName, updateRequest.email());
 
-        final StudentResponse updatedStudent = studentService.update(id, updateRequest);;
+        final StudentResponse updatedStudent = studentService.update(id, updateRequest);
 
         log.info("{}, Successfully updated student: {}", methodName, updatedStudent);
 

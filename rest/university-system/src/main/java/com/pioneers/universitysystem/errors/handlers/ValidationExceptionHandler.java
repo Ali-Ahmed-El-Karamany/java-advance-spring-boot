@@ -33,7 +33,6 @@ public class ValidationExceptionHandler {
     public ErrorResponse<List<ErrorDescription>> handleMethodArgumentNotValidException(
             final MethodArgumentNotValidException e
     ) {
-
         final String methodName = e.getParameter().getMethod().getName();
 
         final List<ErrorDescription> errors = e.getFieldErrors()
@@ -80,7 +79,6 @@ public class ValidationExceptionHandler {
             final MethodArgumentTypeMismatchException e
     ) {
         final String methodName = e.getParameter().getMethod().getName();
-
         final ErrorDescription errors = new ErrorDescription(e.getName(), e.getCause().getMessage());
 
         log.error("{}, Request validation failed: {}", methodName, errors);

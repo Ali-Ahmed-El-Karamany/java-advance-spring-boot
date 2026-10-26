@@ -28,13 +28,14 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<StudentResponse> findAll() throws StudentException {
         final String methodName = "findAll";
+        log.debug("{}, Finding all registered students sorted by age", methodName);
 
         final List<Student> registeredStudents = studentRepository.findAllSortedByAge();
 
         if (registeredStudents.isEmpty()) {
             final String logMessage = String.format("%s, No Students found.", methodName);
 
-            throw new StudentException("No Student are Registered Yet!", logMessage);
+            throw new StudentException("No Students are Registered Yet!", logMessage);
         }
 
         log.debug("{}, Successfully fetched {} registered students from DB", methodName, registeredStudents.size());
@@ -42,6 +43,21 @@ public class StudentServiceImpl implements StudentService {
         return registeredStudents.stream()
                 .map(StudentMappers::toStudentResponse)
                 .toList();
+    }
+
+    @Override
+    public StudentResponse findByEmail(final String email) throws StudentException {
+        final String methodName = "findByEmail";
+
+        final Student student = studentRepository.findByEmail(email).orElseThrow(() -> {
+            final String logMessage = String.format("%s, No Student registered with email [%s]", methodName, email);
+
+            return new StudentException("Student Not Found", logMessage);
+        });
+
+        log.debug("{}, Successfully found student with email [{}]", methodName, email);
+
+        return toStudentResponse(student);
     }
 
     @Override
@@ -63,6 +79,8 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentResponse> findAllSucceeded() throws StudentException {
         final String methodName = "findAllSucceeded";
 
+        log.debug("{}, Finding all succeeded students", methodName);
+
         final List<Student> succeededStudents = studentRepository.findAllSucceeded();
 
         if (succeededStudents.isEmpty()) {
@@ -70,6 +88,7 @@ public class StudentServiceImpl implements StudentService {
 
             throw new StudentException("No succeeded students found", logMessage);
         }
+        log.debug("{}, Found {} succeeded students", methodName, succeededStudents.size());
 
         return succeededStudents.stream()
                 .map(StudentMappers::toStudentResponse)
@@ -96,8 +115,9 @@ public class StudentServiceImpl implements StudentService {
         foundStudent.setEmail(updateRequest.email());
         foundStudent.setPassword(updatedHashedPassword);
         foundStudent.setScore(updateRequest.score());
+        foundStudent.setFinalScore(updateRequest.finalScore());
 
-        studentRepository.update(id, foundStudent);
+        studentRepository.update(foundStudent);
 
         log.debug("{}, Successfully updated student with ID [{}]", methodName, id);
 
@@ -112,8 +132,10 @@ public class StudentServiceImpl implements StudentService {
 
             return new StudentException("Student Not Registered", lgoMessage);
         });
+        foundStudent.setLoggedIn(false);
+        foundStudent.setArchived(true);
 
-        studentRepository.delete(id);
+        studentRepository.update(foundStudent);
 
         log.debug("{}, Successfully deleted student with email {}", methodName, foundStudent.getEmail());
 
@@ -124,7 +146,15 @@ public class StudentServiceImpl implements StudentService {
     public void deleteAll() {
         final String methodName = "deleteAll";
 
-        studentRepository.deleteAll();
+        final List<Student> deletedStudents = studentRepository.findAllSortedByAge()
+                .stream()
+                .peek(student -> {
+                    student.setArchived(true);
+                    student.setLoggedIn(false);
+                })
+                .toList();
+
+        studentRepository.updateAll(deletedStudents);
 
         log.debug("{}, Successfully deleted all students", methodName);
     }

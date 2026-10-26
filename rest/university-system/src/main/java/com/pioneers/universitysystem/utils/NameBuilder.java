@@ -1,6 +1,6 @@
 package com.pioneers.universitysystem.utils;
 
-public final  class NameBuilder {
+public final class NameBuilder {
 
     private NameBuilder() {
         throw new AssertionError("Utility Class");

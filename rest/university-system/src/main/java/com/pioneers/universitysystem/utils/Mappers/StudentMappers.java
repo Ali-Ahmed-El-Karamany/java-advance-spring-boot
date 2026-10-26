@@ -1,9 +1,13 @@
 package com.pioneers.universitysystem.utils.Mappers;
 
 import com.pioneers.universitysystem.models.dtos.requests.StudentRegisterRequest;
+import com.pioneers.universitysystem.models.dtos.responses.AddressResponse;
 import com.pioneers.universitysystem.models.dtos.responses.StudentResponse;
 import com.pioneers.universitysystem.models.entities.Student;
 
+import java.util.Optional;
+
+import static com.pioneers.universitysystem.utils.Mappers.AddressMapper.toAddressResponse;
 import static com.pioneers.universitysystem.utils.NameBuilder.buildFullName;
 
 public final class StudentMappers {
@@ -12,12 +16,26 @@ public final class StudentMappers {
     }
 
     public static StudentResponse toStudentResponse(final Student student) {
-        return new StudentResponse(student.getFullName(), student.getAge(), student.getEmail());
+        final Optional<AddressResponse> optionalAddressResponse = toAddressResponse(student.getAddress());
+
+        return new StudentResponse(
+                student.getFullName(),
+                student.getAge(),
+                student.getEmail(),
+                student.getScore(),
+                optionalAddressResponse);
     }
 
     public static StudentResponse toStudentResponse(final StudentRegisterRequest registerRequest) {
         final String fullName = buildFullName(registerRequest.firstName(), registerRequest.lastName());
 
-        return new StudentResponse(fullName, registerRequest.age(), registerRequest.email());
+        final Optional<AddressResponse> optionalAddressResponse = toAddressResponse(registerRequest.addressRequest());
+
+        return new StudentResponse(
+                fullName,
+                registerRequest.age(),
+                registerRequest.email(),
+                0.0f,
+                optionalAddressResponse);
     }
 }
