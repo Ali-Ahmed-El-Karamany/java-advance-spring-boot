@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
     public void signup(final StudentRegisterRequest registerRequest) throws RegistrationException {
         final String methodName = "signup";
 
-        studentRepository.findByEmail(registerRequest.email()).ifPresent(student -> {
+        studentRepository.findExistingEmail(registerRequest.email()).ifPresent(student -> {
             final String logMessage = String.format("%s, Registration failed: [%s] is already registered",
                     methodName, student.getEmail());
 

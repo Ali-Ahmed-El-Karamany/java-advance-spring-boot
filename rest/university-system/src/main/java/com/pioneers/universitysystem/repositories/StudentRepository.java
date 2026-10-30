@@ -27,5 +27,5 @@ public interface StudentRepository {
 
     List<Student> findAllSucceeded();
 
-    boolean isEmailExists(final String email);
+    Optional<Student> findExistingEmail(String email);
 }

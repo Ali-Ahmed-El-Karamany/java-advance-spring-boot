@@ -24,14 +24,6 @@ public class StudentRepositoryImpl implements StudentRepository {
     public void save(final Student student) throws RegistrationException{
         final String methodName = "save";
 
-        if (isEmailExists(student.getEmail())) {
-            final String logMessage = String.format("%s, Registration failed: [%s] is already registered",
-                    methodName, student.getEmail());
-
-            throw new RegistrationException(
-                    String.format("Student with email [%s] is already registered", student.getEmail()), logMessage);
-        }
-
         entityManager.persist(student);
 
         log.debug("{}, Saved student with email = [{}] and id = [{}] to the database",
@@ -165,14 +157,22 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
-    public boolean isEmailExists(final String email) {
-        final String jpql = "SELECT COUNT(s) FROM Student s WHERE s.email = :email";
+    public Optional<Student> findExistingEmail(final String email) {
+        final String methodName = "findExistingEmail";
+        final String jpql = "SELECT s FROM  Student s WHERE s.email = :email";
 
-        final Long count = entityManager
-                .createQuery(jpql, Long.class)
-                .setParameter("email", email)
-                .getSingleResult();
+        final TypedQuery<Student> typedQuery = entityManager.createQuery(jpql, Student.class);
+        typedQuery.setParameter("email", email);
 
-        return count > 0;
+        try {
+            final Student student = typedQuery.getSingleResult();
+            log.debug("{}, Student {} with email [{}] successfully found", methodName, student.getFullName(), email);
+
+            return Optional.of(student);
+        } catch (final NoResultException e) {
+            log.debug("{}, No student found with email [{}]", methodName, email);
+
+            return Optional.empty();
+        }
     }
 }
