@@ -30,7 +30,7 @@ public class StudentServiceImpl implements StudentService {
         final String methodName = "findAll";
         log.debug("{}, Finding all registered students sorted by age", methodName);
 
-        final List<Student> registeredStudents = studentRepository.findAllSortedByAge();
+        final List<Student> registeredStudents = studentRepository.findAllByIsArchivedIsFalseOrderByAge();
 
         if (registeredStudents.isEmpty()) {
             final String logMessage = String.format("%s, No Students found.", methodName);
@@ -49,7 +49,7 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponse findByEmail(final String email) throws StudentException {
         final String methodName = "findByEmail";
 
-        final Student student = studentRepository.findByEmail(email).orElseThrow(() -> {
+        final Student student = studentRepository.findByEmailAndIsArchivedFalse(email).orElseThrow(() -> {
             final String logMessage = String.format("%s, No Student registered with email [%s]", methodName, email);
 
             return new StudentException("Student Not Found", logMessage);
@@ -64,7 +64,7 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponse findById(final UUID id) throws StudentException {
         final String methodName = "findById";
 
-        final Student student = studentRepository.findById(id).orElseThrow(() -> {
+        final Student student = studentRepository.findByIdAndIsArchivedFalse(id).orElseThrow(() -> {
             final String logMessage = String.format("%s, No Student registered with ID [%s]", methodName, id);
 
             return new StudentException("Student Not Found", logMessage);
@@ -99,7 +99,7 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponse update(final UUID id, final StudentUpdateRequest updateRequest) throws StudentException {
         final String methodName = "update";
 
-        final Student foundStudent = studentRepository.findById(id).orElseThrow(() -> {
+        final Student foundStudent = studentRepository.findByIdAndIsArchivedFalse(id).orElseThrow(() -> {
             final String logMessage = String.format("%s, Student with ID [%s] is not registered", methodName, id);
 
             return new StudentException("Student Not Found", logMessage);
@@ -117,7 +117,7 @@ public class StudentServiceImpl implements StudentService {
         foundStudent.setScore(updateRequest.score());
         foundStudent.setFinalScore(updateRequest.finalScore());
 
-        studentRepository.update(foundStudent);
+        studentRepository.save(foundStudent);
 
         log.debug("{}, Successfully updated student with ID [{}]", methodName, id);
 
@@ -127,15 +127,12 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponse delete(final UUID id) throws StudentException {
         final String methodName = "delete";
 
-        final Student foundStudent = studentRepository.findById(id).orElseThrow(() -> {
+        final Student foundStudent = studentRepository.findByIdAndIsArchivedFalse(id).orElseThrow(() -> {
             final String lgoMessage = String.format("%s, Cannot delete student with ID [%s]", methodName, id);
 
             return new StudentException("Student Not Registered", lgoMessage);
         });
-        foundStudent.setLoggedIn(false);
-        foundStudent.setArchived(true);
-
-        studentRepository.update(foundStudent);
+        studentRepository.deleteById(id);
 
         log.debug("{}, Successfully deleted student with email {}", methodName, foundStudent.getEmail());
 
@@ -146,15 +143,7 @@ public class StudentServiceImpl implements StudentService {
     public void deleteAll() {
         final String methodName = "deleteAll";
 
-        final List<Student> deletedStudents = studentRepository.findAllSortedByAge()
-                .stream()
-                .peek(student -> {
-                    student.setArchived(true);
-                    student.setLoggedIn(false);
-                })
-                .toList();
-
-        studentRepository.updateAll(deletedStudents);
+        studentRepository.deleteAll();
 
         log.debug("{}, Successfully deleted all students", methodName);
     }

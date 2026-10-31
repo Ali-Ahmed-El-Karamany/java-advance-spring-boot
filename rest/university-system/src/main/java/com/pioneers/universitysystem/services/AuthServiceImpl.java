@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
     public void signup(final StudentRegisterRequest registerRequest) throws RegistrationException {
         final String methodName = "signup";
 
-        studentRepository.findExistingEmail(registerRequest.email()).ifPresent(student -> {
+        studentRepository.findByEmail(registerRequest.email()).ifPresent(student -> {
             final String logMessage = String.format("%s, Registration failed: [%s] is already registered",
                     methodName, student.getEmail());
 
@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
 
         final String methodName = "login";
 
-        final Student foundStudent = studentRepository.findByEmail(loginRequest.email())
+        final Student foundStudent = studentRepository.findByEmailAndIsArchivedFalse(loginRequest.email())
                 .orElseThrow(() -> {
                     final String logMessage = String.format("%s, Student with email [%s] is not registered",
                             methodName, loginRequest.email());
@@ -79,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
 
         foundStudent.login();
 
-        studentRepository.update(foundStudent);
+        studentRepository.save(foundStudent);
 
         log.debug("{}, Student with email: {} logged in successfully", methodName, foundStudent.getEmail());
     }
@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
 
         final String methodName = "logout";
 
-        final Student foundStudent = studentRepository.findByEmail(email)
+        final Student foundStudent = studentRepository.findByEmailAndIsArchivedFalse(email)
                 .orElseThrow(() -> {
                     final String logMessage = String.format("%s, Student with email [%s] is not registered",
                             methodName, email);
@@ -106,7 +106,7 @@ public class AuthServiceImpl implements AuthService {
 
         foundStudent.logout();
 
-        studentRepository.update(foundStudent);
+        studentRepository.save(foundStudent);
 
         log.debug("{}, Student with email: {} logged out successfully", methodName, foundStudent.getEmail());
     }
@@ -121,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
         final List<Student> registeredStudents = new ArrayList<>();
 
         registerRequests.forEach(registerRequest -> {
-            studentRepository.findByEmail(registerRequest.email())
+            studentRepository.findByEmailAndIsArchivedFalse(registerRequest.email())
                     .ifPresentOrElse(registeredStudents::add, () -> signup(registerRequest));
         });
 
