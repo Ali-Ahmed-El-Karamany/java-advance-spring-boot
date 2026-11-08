@@ -126,7 +126,7 @@ public class AuthServiceImpl implements AuthService {
         });
 
         if (registeredStudents.isEmpty()) {
-            log.debug("Successfully registered all students");
+            log.debug("{}, Successfully registered all students", methodName);
 
             return new GenericResponse<>("Successfully registered all students",
                     registerRequests.stream().map(StudentMappers::toStudentResponse).toList());
@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
                 .map(StudentMappers::toStudentResponse)
                 .toList();
 
-        log.debug("Those students are already registered {}", rejectedStudents);
+        log.debug("{}, Those students are already registered {}", methodName, rejectedStudents);
         return new GenericResponse<>("Those students are already registered registered", rejectedStudents);
     }
 }

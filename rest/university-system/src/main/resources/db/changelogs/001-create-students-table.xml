@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="1793457158755-1" author="Ali ElKaramany">
+        <createTable tableName="students">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="students_pk"/>
+            </column>
+
+            <column name="full_name" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="age" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="email" type="VARCHAR">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="password" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="is_login" type="BOOLEAN" defaultOnNull="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="score" type="FLOAT"/>
+            <column name="final_score" type="FLOAT"/>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="students"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1793650396223-1" author="Ali ElKaramany">
+        <addColumn tableName="students">
+            <column name="created_at" type="TIMESTAMP"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="students" columnName="created_at"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1793650532214-1" author="Ali ElKaramany">
+        <addColumn tableName="students">
+            <column name="is_archived" type="BOOLEAN"/>
+        </addColumn>
+
+        <rollback>
+            <dropColumn tableName="students" columnName="is_archived"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
